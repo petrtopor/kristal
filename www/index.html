@@ -73,6 +73,77 @@
       <img src="https://vk.com/rtrg?p=VK-RTRG-335296-boYY8" style="position:fixed; left:-999px;" alt=""/>
     </noscript>
     
+    <script src="/__/firebase/5.9.1/firebase-app.js"></script>
+    <script src="/__/firebase/5.9.1/firebase-auth.js"></script>
+    <script src="/__/firebase/init.js"></script>
+    <script>
+      window.onload = () => {
+        console.log('window.onload')
+
+        getPhoneNumberFromUserInput = () => {
+          console.log('getPhoneNumberFromUserInput()')
+          // return '+79176218533'
+          console.log(document.querySelector('#input-area > input[type="text"]:nth-child(1)').value)
+          return document.querySelector('#input-area > input[type="text"]:nth-child(1)').value
+        }
+
+        // [START appVerifier]
+        window.recaptchaVerifier = new firebase.auth.RecaptchaVerifier('sign-in-button', {
+          'size': 'invisible',
+          'callback': function(response) {
+            console.log('reCAPTCHA solved, allow signInWithPhoneNumber.')
+            // reCAPTCHA solved, allow signInWithPhoneNumber.
+            onSignInSubmit();
+          }
+        });
+        // [END appVerifier]
+
+        function onSignInSubmit() {
+          console.log('onSignInSubmit')
+          var phoneNumber = getPhoneNumberFromUserInput();
+          // var phoneNumber = '+79176218533'
+          var appVerifier = window.recaptchaVerifier;
+          firebase.auth().signInWithPhoneNumber(phoneNumber, appVerifier)
+            .then(function (confirmationResult) {
+              console.log('sms sent; confirmationResult: ', confirmationResult)
+              // SMS sent. Prompt user to type the code from the message, then sign the
+              // user in with confirmationResult.confirm(code).
+              // confirmationResult.confirm(code)
+              window.confirmationResult = confirmationResult;
+              document.querySelector('#sign-in-button').addEventListener('click', event => {
+                console.log('the RENEWED button has been clicked')
+                confirmationResult.confirm(document.querySelector('#input-area > input[type="text"]:nth-child(2)').value).then(result => {
+                  document.querySelector('#input-area > input[type="text"]:nth-child(2)').value = 'КЛАСС!!!'
+                }).catch(error => {
+                  document.querySelector('#input-area > input[type="text"]:nth-child(2)').value = 'OБLOM!!!'
+                })
+              })
+              /*
+              window.confirmationResult = confirmationResult;
+              window.signingIn = false;
+              updateSignInButtonUI();
+              updateVerificationCodeFormUI();
+              updateVerifyCodeButtonUI();
+              updateSignInFormUI();
+              */
+            }).catch(function (error) {
+              // Error; SMS not sent
+              console.error('Error during signInWithPhoneNumber', error);
+              window.alert('Error during signInWithPhoneNumber:\n\n' + error.code + '\n\n' + error.message);
+              // window.signingIn = false;
+              // updateSignInFormUI();
+              // updateSignInButtonUI();
+            });
+        }
+
+        document.querySelector('#sign-in-button').addEventListener('click', event => {
+          console.log('the button has been clicked')
+          onSignInSubmit()
+        })
+      }
+
+    </script>
+
   </head>
   
 	<body class="home">
@@ -82,7 +153,51 @@
 			<p>Узнай свою звездную пару</p>
 			<a href="test.html" class="btn btn-start">Пройти тест</a>
 			<a href="https://www.kristall-shop.ru/actions/?utm_source=%20social&utm_medium=quiz&utm_campaign=voprosi%EF%BB%BF" class="logo logo-red" target="_blank">КРИСТАЛЛ</a>
-			<a href="rules.pdf" class="rules" target="_blank">Участвуя в данном тесте вы соглашаетесь с его правилами</a>
-			</div>
+      <a href="rules.pdf" class="rules" target="_blank">Участвуя в данном тесте вы соглашаетесь с его правилами</a>
+      <div id="sign-in-form">
+        <div id="input-area">
+          <input type="text">
+          <input type="text">
+        </div>
+        <!-- Sign-in button -->
+        <div id="sign-in-button"></div>
+      </div>
+
+      <style>
+        #input-area > input[type="text"] {
+          width: 100%;
+        }
+        div#input-area {
+          height: 50px;
+          width: 100%;
+          background-color: aquamarine;
+          align-items: center;
+        }
+        div#sign-in-form {
+          position: absolute;
+          left: calc(50% - 48px);
+          height: 148px;
+          width: 146px;
+          border: solid;
+          display: flex;
+          flex-direction: column;
+          align-items: center;
+        }
+        div#sign-in-button {
+          height: 48px;
+          width: 128px;
+          background-color: blueviolet;
+          display: flex;
+          flex-direction: row;
+          justify-content: space-around;
+          align-items: center;
+          cursor: pointer;
+        }
+        #sign-in-button > span {
+          color: antiquewhite;
+          font-size: 18px;
+        }
+      </style>
+    </div>
 	</body>
 </html>
